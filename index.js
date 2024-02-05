@@ -243,7 +243,7 @@ app.get("/", async (req, res) => {
   res.send(data);
 });
 
-const port = process.env.port;
+const port = process.env.PORT;
 app.listen(port, () => {
   console.log("Server started on "+port);
 });
