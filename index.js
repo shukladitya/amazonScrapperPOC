@@ -2,6 +2,8 @@ const express = require("express");
 const puppeteer = require("puppeteer");
 const fs = require("fs");
 
+require("dotenv").config();
+
 // Function to handle cookies window
 async function handleCookiesPopup(page) {
   const cookiesButton = await page.$("#sp-cc-accept");
@@ -58,6 +60,13 @@ const proxyList = [];
 const scrapeAmazon = async (pageNumber, scrapeString) => {
   const randomProxy = Math.floor(Math.random() * proxyList.length);
   const browser = await puppeteer.launch({
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
+    args: [
+      "--disable-setuid-sandbox",
+      "--no-sandbox",
+      "--no-zygote",
+      "--single-process",
+    ],
     // headless: false,
     // defaultViewport: null,
     // args: [`--proxy-server=104.16.109.213:80`],
@@ -243,7 +252,6 @@ app.get("/", async (req, res) => {
   res.send(data);
 });
 
-const port = process.env.PORT;
-app.listen(port, () => {
-  console.log("Server started on "+port);
+app.listen(3000, () => {
+  console.log("Server started on port 3000");
 });
