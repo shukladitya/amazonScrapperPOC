@@ -1,3 +1,4 @@
+const express = require("express");
 const puppeteer = require("puppeteer");
 const fs = require("fs");
 
@@ -54,19 +55,19 @@ const proxyList = [];
 //   await browser.close();
 // };
 
-const scrapeAmazon = async () => {
+const scrapeAmazon = async (pageNumber, scrapeString) => {
   const randomProxy = Math.floor(Math.random() * proxyList.length);
   const browser = await puppeteer.launch({
-    headless: false,
-    defaultViewport: null,
+    // headless: false,
+    // defaultViewport: null,
     // args: [`--proxy-server=104.16.109.213:80`],
   });
 
   // Open a new page
   const page = await browser.newPage();
 
-  const searchPhrase = "Laptop";
-  const scrapeToPage = 3;
+  const searchPhrase = scrapeString;
+  const scrapeToPage = pageNumber; // page number to scrape
 
   console.log("Search phrase:", searchPhrase);
   console.log("Scrape to page:", scrapeToPage);
@@ -217,16 +218,32 @@ const scrapeAmazon = async () => {
 
   // Save JSON to file
   const outputFilename = "scrapedData.json";
-  fs.writeFileSync(outputFilename, JSON.stringify(cardData, null, 2), "utf8"); // Write the JSON data to a file
-  console.log(`Data saved to ${outputFilename}`);
+  // fs.writeFileSync(outputFilename, JSON.stringify(cardData, null, 2), "utf8"); // Write the JSON data to a file
+  // console.log(`Data saved to ${outputFilename}`);
 
   // Close the browser
   await browser.close();
+
+  return cardData;
 };
 
-const main = async () => {
+const main = async (pageNumber, scrapeString) => {
   // await proxyFetch();
-  await scrapeAmazon();
+  return await scrapeAmazon(pageNumber, scrapeString);
 };
 
-main();
+const app = express();
+
+app.get("/", async (req, res) => {
+  const pageNumber = req.query.pageNumber;
+  const scrapeString = req.query.scrape;
+  console.log(`Scraping page number ${pageNumber}...`);
+
+  const data = await main(pageNumber, scrapeString);
+  res.send(data);
+});
+
+const port = process.env.port;
+app.listen(port, () => {
+  console.log("Server started on "+port);
+});
